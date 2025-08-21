@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background-light: #ffffff;
+  --foreground-light: #171717;
+  --background-dark: #0a0a0a;
+  --foreground-dark: #ededed;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background-light);
+  color: var(--foreground-light);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--background-dark);
+    color: var(--foreground-dark);
+  }
+
+  /* Add dark mode styles for your auth cards */
+  .auth-card {
+    background-color: #171717;
+    border: 1px solid #27272a;
+  }
+  .auth-card h1 {
+    color: #f4f4f5;
+  }
+  .auth-card input {
+    background-color: #27272a;
+    border-color: #3f3f46;
+    color: #f4f4f5;
+  }
+  .auth-card .divider-text {
+    color: #a1a1aa;
+  }
 }

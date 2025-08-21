@@ -1,62 +1,53 @@
-"use client";
+'use client';
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import GoogleLogin from "./auth/GoogleLogin";
+import { motion } from "framer-motion";
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = async () => {
-    try {
-      setError("");
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Logged in user:", userCredential.user);
-
-      // Redirect to dashboard
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error("Login error:", err.message);
-      setError(err.message);
-    }
-  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">CrackBatu Login</h1>
-
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="mb-2 p-2 border rounded w-64"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="mb-4 p-2 border rounded w-64"
+    <main className="min-h-screen bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      
+      {/* Animated Glowing Blob */}
+      <motion.div
+        className="absolute w-[700px] h-[700px] bg-yellow-500/20 blur-[180px] rounded-full"
+        animate={{ x: [0, 50, -50, 0], y: [0, -30, 30, 0], scale: [1, 1.05, 1, 0.98, 1] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+        style={{ top: "30%", left: "50%", translateX: "-50%", translateY: "-50%" }}
       />
 
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-
-      <button
-        onClick={handleLogin}
-        className="mb-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-64"
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 text-center space-y-6 max-w-2xl"
       >
-        Login with Email
-      </button>
+        {/* Title */}
+        <h1 className="text-5xl font-extrabold text-yellow-500 drop-shadow-lg">
+          CrackBatu DBATU
+        </h1>
 
-      <div className="text-center my-4">or</div>
+        {/* Description */}
+        <p className="text-white text-lg md:text-xl">
+          Centralized web platform for all engineering students of Dr. Babasaheb Ambedkar Technological University.
+          Access PYQs, study resources, and departmental materials from a single hub.
+        </p>
 
-      <GoogleLogin />
-    </div>
+        {/* Login Button */}
+        <button
+          onClick={() => router.push("/auth/login")}
+          className="mt-6 px-8 py-4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+        >
+          Login
+        </button>
+
+        {/* Footer / Credit */}
+        <p className="text-white/70 mt-6 text-sm">
+          © 2025 CrackBatu. All rights reserved.
+        </p>
+      </motion.div>
+    </main>
   );
 }
