@@ -56,7 +56,6 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check if email is verified
       if (!user.emailVerified) {
         showNotification("Email not verified. Please check your inbox.", "error");
         await auth.signOut();
@@ -64,12 +63,10 @@ export default function LoginPage() {
         return;
       }
 
-      // Update Firestore and redirect
       await updateFirestoreUser(user);
       router.push("/dashboard");
 
     } catch (err: any) {
-      console.error(err);
       switch (err.code) {
         case "auth/user-not-found":
           showNotification("User not found. Please signup first.");
@@ -173,6 +170,11 @@ export default function LoginPage() {
                 Forgot Password?
               </button>
             </div>
+
+            {/* Admin login link */}
+            <p className="text-center text-red-400 mt-4 cursor-pointer hover:underline" onClick={() => router.push("/auth/admin/login")}>
+              Login as Admin
+            </p>
 
             <p className="text-center text-yellow-400 mt-4 cursor-pointer hover:underline" onClick={() => setUseEmail(false)}>
               Use Google Login Instead
