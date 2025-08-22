@@ -5,3 +5,4 @@ npm install firebase-admin dotenv
 npm install framer-motion
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
+npm install lucide-react
