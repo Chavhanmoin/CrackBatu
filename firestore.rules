@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -----------------------
+    // USERS COLLECTION
+    // -----------------------
+    match /users/{userId} {
+      // All logged-in users can read user info
+      allow read: if request.auth != null;
+
+      // Users can create/update only their own document
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+
+      // Only admins (super or department) can delete users
+      allow delete: if isAdmin();
+    }
+
+    // -----------------------
+    // RESOURCES COLLECTION
+    // -----------------------
+    match /resources/{resourceId} {
+      // Everyone logged in can read/download resources
+      allow read: if request.auth != null;
+
+      // Department admins can create/update resources in their department
+      allow create, update: if isDepartmentAdmin() 
+                            && request.resource.data.department == getUserDepartment();
+
+      // Only super admin can delete resources
+      allow delete: if isSuperAdmin();
+    }
+
+    // -----------------------
+    // HELPER FUNCTIONS
+    // -----------------------
+    function isSuperAdmin() {
+      return request.auth != null
+             && request.auth.token.role == 'super_admin';
+    }
+
+    function isDepartmentAdmin() {
+      return request.auth != null
+             && request.auth.token.role.matches('.*_admin')
+             && request.auth.token.role != 'super_admin';
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || isDepartmentAdmin();
+    }
+
+    // Department of logged-in user from custom claims
+    function getUserDepartment() {
+      return request.auth.token.department;
+    }
+  }
+}

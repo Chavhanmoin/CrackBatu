@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, db } from '../../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { Loader2, LogOut, Folder, CheckCircle, Upload, Edit, Shield } from 'lucide-react';
+import { Loader2, LogOut, Folder, CheckCircle, Upload, Edit, Shield, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -76,17 +76,20 @@ export default function AdminDashboard() {
       {/* Dashboard Actions */}
       <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Super Admin */}
         {userData.role === 'super_admin' ? (
           <>
             <ActionCard icon={<Folder />} label="Manage All Departments" link="/admin/manage" />
             <ActionCard icon={<CheckCircle />} label="Approve Deletes" link="/admin/approvals" />
             <ActionCard icon={<Shield />} label="Edit/Delete Any Content" link="/admin/content" />
+            <ActionCard icon={<Users />} label="View Users" link="/admin/users" />
           </>
         ) : (
           <>
             <ActionCard icon={<Folder />} label={`Manage ${userData.department}`} link={`/admin/${userData.department}`} />
             <ActionCard icon={<Upload />} label="Upload Content" link={`/admin/${userData.department}/upload`} />
             <ActionCard icon={<Edit />} label="Edit Content" link={`/admin/${userData.department}/edit`} />
+            <ActionCard icon={<Users />} label="View Users" link="/admin/users" />
           </>
         )}
       </div>

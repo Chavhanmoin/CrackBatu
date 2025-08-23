@@ -22,7 +22,7 @@ export default function LoginPage() {
     setTimeout(() => { setError(""); setMessage(""); }, 4000);
   };
 
-  // Firestore user create/update
+  // Update or create user in Firestore
   const updateFirestoreUser = async (user: any) => {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
@@ -36,9 +36,9 @@ export default function LoginPage() {
     };
 
     if (userSnap.exists()) {
-      await setDoc(userRef, data, { merge: true }); // update
+      await setDoc(userRef, data, { merge: true }); // update existing
     } else {
-      await setDoc(userRef, { ...data, createdAt: serverTimestamp() }); // create
+      await setDoc(userRef, { ...data, createdAt: serverTimestamp() }); // create new
     }
   };
 
@@ -57,14 +57,14 @@ export default function LoginPage() {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        showNotification("Email not verified. Please check your inbox.", "error");
+        showNotification("Email not verified. Check your inbox.");
         await auth.signOut();
         setLoading(false);
         return;
       }
 
       await updateFirestoreUser(user);
-      router.push("/dashboard");
+      router.push("/dashboard"); // redirect to dashboard for all users
 
     } catch (err: any) {
       switch (err.code) {
@@ -93,7 +93,7 @@ export default function LoginPage() {
       const user = result.user;
 
       await updateFirestoreUser(user);
-      router.push("/dashboard");
+      router.push("/dashboard"); // redirect to dashboard for all users
     } catch (err) {
       showNotification("Google login failed.");
       console.error(err);
@@ -132,7 +132,6 @@ export default function LoginPage() {
         className="relative z-10 w-full max-w-md p-10 bg-black/70 border border-yellow-500/50 rounded-3xl shadow-2xl backdrop-blur-md"
       >
         <h2 className="text-4xl font-bold text-center text-yellow-400 mb-6">Welcome Back</h2>
-        <p className="text-center text-gray-400 mb-6">{useEmail ? "Login with Email & Password" : "Login with Google or Email"}</p>
 
         {!useEmail && (
           <>
@@ -143,7 +142,7 @@ export default function LoginPage() {
               Continue with Google
             </button>
             <p className="text-center text-yellow-400 mt-4 cursor-pointer hover:underline" onClick={() => setUseEmail(true)}>
-              Don't want to use Google? Login with Email
+              Login with Email
             </p>
           </>
         )}
@@ -171,7 +170,6 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Admin login link */}
             <p className="text-center text-red-400 mt-4 cursor-pointer hover:underline" onClick={() => router.push("/auth/admin/login")}>
               Login as Admin
             </p>

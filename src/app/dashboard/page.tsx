@@ -1,30 +1,26 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { auth, db } from "../../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const deptParam = searchParams.get('dept');
-
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
-        router.push("/auth/admin/login");
+        router.push("/auth/login"); // normal users redirect here
         return;
       }
 
-      // Fetch user info from Firestore
       const userDoc = await getDoc(doc(db, "users", currentUser.uid));
       if (!userDoc.exists()) {
-        router.push("/auth/admin/login");
+        router.push("/auth/login");
         return;
       }
 
@@ -60,7 +56,7 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <li>Manage your Department: {userData.department}</li>
+              <li>Manage your Department: {userData.department || "N/A"}</li>
               <li>Upload or Edit Content</li>
               <li>Delete requires Super Admin Approval</li>
             </>
