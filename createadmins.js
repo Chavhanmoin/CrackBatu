@@ -1,6 +1,4 @@
 // createadmins.js
-
-// Load environment variables from .env.local
 require('dotenv').config({ path: './.env.local' });
 
 const admin = require("firebase-admin");
@@ -10,13 +8,11 @@ const path = require("path");
 const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
 const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Admin@123";
 
-// Check if serviceAccountPath is defined
 if (!serviceAccountPath) {
   console.error("❌ FIREBASE_SERVICE_ACCOUNT_PATH is not defined in .env.local");
   process.exit(1);
 }
 
-// Initialize Firebase Admin SDK
 const serviceAccount = require(path.resolve(serviceAccountPath));
 
 admin.initializeApp({
@@ -40,30 +36,40 @@ const admins = [
 (async () => {
   for (let a of admins) {
     try {
-      // Create user in Firebase Auth
-      const userRecord = await auth.createUser({
-        email: a.email,
-        emailVerified: true,
-        password: defaultPassword,
-        displayName: a.name,
-      });
+      let userRecord;
 
-      console.log(`✅ Created user: ${a.name} (${a.email})`);
+      // Check if user already exists
+      try {
+        userRecord = await auth.getUserByEmail(a.email);
+        console.log(`ℹ️ User already exists: ${a.email}`);
+      } catch {
+        // User does not exist, create new
+        userRecord = await auth.createUser({
+          email: a.email,
+          emailVerified: true,
+          password: defaultPassword,
+          displayName: a.name,
+        });
+        console.log(`✅ Created user: ${a.name} (${a.email})`);
+      }
 
-      // Create Firestore doc
-      await firestore.collection("users").doc(userRecord.uid).set({
-        uid: userRecord.uid,
-        name: a.name,
-        email: a.email,
-        role: a.role,
-        department: a.department || null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastLogin: null,
-      });
+      // Create or update Firestore doc
+      await firestore.collection("users").doc(userRecord.uid).set(
+        {
+          uid: userRecord.uid,
+          name: a.name,
+          email: a.email,
+          role: a.role,
+          department: a.department || null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastLogin: null,
+        },
+        { merge: true } // merge if document exists
+      );
 
-      console.log(`📄 Firestore doc created for: ${a.name}`);
+      console.log(`📄 Firestore doc created/updated for: ${a.name}`);
     } catch (err) {
-      console.error(`❌ Error creating ${a.name}:`, err.message);
+      console.error(`❌ Error processing ${a.name}:`, err.message);
     }
   }
 

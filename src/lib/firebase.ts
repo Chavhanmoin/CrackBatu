@@ -1,9 +1,9 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Firebase config from environment variables
+// Firebase config
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,10 +13,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only once
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Export auth, Firestore, and provider
+// Initialize Auth with persistence
 export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error("Error setting auth persistence:", err);
+});
+
+// Firestore & Google provider
 export const db = getFirestore(app);
 export const provider = new GoogleAuthProvider();

@@ -4,37 +4,39 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, db } from '../../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { 
-  Loader2, LogOut, Folder, CheckCircle, Upload, Edit, Shield 
-} from 'lucide-react';
+import { Loader2, LogOut, Folder, CheckCircle, Upload, Edit, Shield } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const deptParam = searchParams.get('dept');
+  const deptParam = useSearchParams().get('dept');
 
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const user = auth.currentUser;
-      if (!user) {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) {
         router.push('/auth/admin/login');
         return;
       }
 
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
       if (!userDoc.exists()) {
         router.push('/auth/admin/login');
         return;
       }
 
-      setUserData(userDoc.data());
-      setLoading(false);
-    };
+      const data = userDoc.data();
+      if (!data.role?.includes('_admin')) {
+        router.push('/auth/admin/login');
+        return;
+      }
 
-    checkUser();
+      setUserData(data);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [router]);
 
   const handleLogout = async () => {
@@ -56,8 +58,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button 
-          onClick={handleLogout} 
+        <button
+          onClick={handleLogout}
           className="flex items-center gap-2 px-4 py-2 bg-yellow-500 rounded hover:bg-yellow-600 text-black font-semibold"
         >
           <LogOut className="w-4 h-4" /> Logout
@@ -68,9 +70,7 @@ export default function AdminDashboard() {
       <div className="bg-gray-800 border border-yellow-500 rounded p-6 mb-8">
         <p className="text-xl">👋 Welcome, <strong>{userData.name}</strong></p>
         <p className="mt-2">🔑 Role: <strong>{userData.role}</strong></p>
-        {userData.department && (
-          <p>🏫 Department: <strong>{userData.department}</strong></p>
-        )}
+        {userData.department && <p>🏫 Department: <strong>{userData.department}</strong></p>}
       </div>
 
       {/* Dashboard Actions */}
@@ -95,9 +95,8 @@ export default function AdminDashboard() {
 }
 
 // Reusable Action Card
-function ActionCard({ icon, label, link }: { icon: React.ReactNode, label: string, link: string }) {
+function ActionCard({ icon, label, link }: { icon: React.ReactNode; label: string; link: string }) {
   const router = useRouter();
-
   return (
     <div
       className="bg-gray-800 border border-yellow-500 rounded p-6 flex flex-col items-center justify-center text-center text-yellow-400 cursor-pointer hover:bg-gray-700 transition"
